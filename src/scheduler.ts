@@ -10,8 +10,8 @@ const execPromise = promisify(exec);
 // Configuration for timing (in minutes)
 const PORTFOLIO_UPDATE_MIN_INTERVAL = 45;
 const PORTFOLIO_UPDATE_MAX_INTERVAL = 90;
-const MENTION_CHECK_MIN_INTERVAL = 25;
-const MENTION_CHECK_MAX_INTERVAL = 50;
+const MENTION_CHECK_MIN_INTERVAL = 5;
+const MENTION_CHECK_MAX_INTERVAL = 15;
 
 // Get random time in milliseconds between min and max minutes
 function getRandomInterval(minMinutes: number, maxMinutes: number): number {

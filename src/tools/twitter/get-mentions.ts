@@ -5,13 +5,25 @@ import { generateTweetReply } from "./generate-reply.js";
 async function getMentions(scraper: Scraper) {
   try {
     console.log("Searching for mentions...");
-    const mentions = scraper.searchTweets("blaickrock", 5, SearchMode.Top);
+    const mentions = scraper.searchTweets("blaickrock", 10, SearchMode.Latest);
     const unrepliedTweets: Tweet[] = [];
 
     // Collect tweets we haven't replied to yet
     for await (const tweet of mentions) {
       // Skip our own tweets & skip replies.
       if (tweet.username?.toLowerCase() === "blaickrock") {
+        continue;
+      }
+
+      if (tweet.text?.startsWith("https://t.co")) {
+        continue;
+      }
+
+      if (tweet.isSelfThread) {
+        continue;
+      }
+
+      if (tweet.thread.length > 2) {
         continue;
       }
 
