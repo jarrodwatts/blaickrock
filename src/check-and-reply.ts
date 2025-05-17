@@ -10,8 +10,7 @@ async function main() {
   console.log("Starting mention check and reply process...");
 
   try {
-    const scraper = new Scraper();
-    await loginTwitter(scraper);
+    const scraper = await loginTwitter(new Scraper());
     await getMentions(scraper);
     console.log("Process completed successfully");
   } catch (error) {

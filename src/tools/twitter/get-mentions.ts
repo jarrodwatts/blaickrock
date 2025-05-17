@@ -1,5 +1,4 @@
 import { Scraper, SearchMode, Tweet } from "agent-twitter-client";
-import { loginTwitter } from "./login.js";
 import { hasRepliedToTweet, markTweetAsReplied } from "./replied-tweets.js";
 import { generateTweetReply } from "./generate-reply.js";
 
@@ -65,10 +64,6 @@ async function postReplyToTweet(
   replyText: string
 ) {
   try {
-    if (!(await scraper.isLoggedIn())) {
-      await loginTwitter(scraper);
-    }
-
     const response = await scraper.sendTweet(replyText, tweetId);
     console.log(`Reply posted: ${response}`);
     return response;

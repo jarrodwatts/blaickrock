@@ -1,4 +1,4 @@
-import { streamText } from "ai";
+import { generateText } from "ai";
 import { CoreMessage } from "ai";
 import { google } from "@ai-sdk/google";
 import {
@@ -25,23 +25,17 @@ export async function generateTweetReply(tweet: Tweet): Promise<string> {
     messages.push({ role: "user", content: userPrompt });
 
     // Use the same model as in index.ts or adjust as needed
-    const replyResult = streamText({
-      model: google("gemini-2.5-flash-preview-04-17"),
-      messages: messages,
-      system: twitterReplySystemPrompt,
-    });
+    const replyResult = (
+      await generateText({
+        model: google("gemini-2.5-flash-preview-04-17"),
+        messages: messages,
+        system: twitterReplySystemPrompt,
+      })
+    ).text;
 
-    let replyContent = "";
-    console.log("\nGenerating tweet reply...");
-    for await (const delta of replyResult.textStream) {
-      replyContent += delta;
-      process.stdout.write(delta);
-    }
+    console.log(replyResult);
 
-    console.log("\nReply generated:");
-    console.log(replyContent);
-
-    return replyContent;
+    return replyResult;
   } catch (error) {
     console.error("Error generating reply:", error);
     throw error;

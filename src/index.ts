@@ -1,4 +1,4 @@
-import { generateText, streamText } from "ai";
+import { generateText } from "ai";
 import dotenv from "dotenv";
 import { mkdir } from "fs/promises";
 import { join } from "path";
@@ -41,25 +41,18 @@ ${tradeDecision}
 `,
     });
 
-    const executorResult = streamText({
-      model: openai("gpt-4o-mini"),
-      messages: executorMessages,
-      tools: {
-        executeSwapTool,
-      },
-      maxSteps: 3,
-    });
+    const executorResult = (
+      await generateText({
+        model: openai("gpt-4o-mini"),
+        messages: executorMessages,
+        tools: {
+          executeSwapTool,
+        },
+        maxSteps: 3,
+      })
+    ).text;
 
-    let fullResponse = "";
-    console.log("\nProcessing trade decision for execution...");
-    for await (const delta of executorResult.textStream) {
-      fullResponse += delta;
-      process.stdout.write(delta);
-    }
-
-    process.stdout.write("\n\n");
-
-    return `${fullResponse}`;
+    return executorResult;
   } catch (error) {
     console.error("Error processing trade decision:", error);
     return tradeDecision;
@@ -88,17 +81,15 @@ Your Tweet:
 `,
     });
 
-    const tweetResult = streamText({
-      model: google("gemini-2.5-flash-preview-04-17"),
-      messages: twitterMessages,
-    });
+    const tweetResult = (
+      await generateText({
+        model: google("gemini-2.5-flash-preview-04-17"),
+        messages: twitterMessages,
+      })
+    ).text;
 
-    let tweetContent = "";
-    console.log("\nGenerating tweet...");
-    for await (const delta of tweetResult.textStream) {
-      tweetContent += delta;
-      process.stdout.write(delta);
-    }
+    process.stdout.write(tweetResult);
+    let tweetContent = tweetResult;
 
     // Add logic to handle tweets that are too long
     if (tweetContent.length > 280) {
@@ -150,15 +141,14 @@ Your Tweet:
 
 async function main() {
   try {
-    // Connect to twitter once upfront
-    const scraper = new Scraper();
-    await loginTwitter(scraper);
+    // Connect to twitter
+    const scraper = await loginTwitter(new Scraper());
 
     // Fetch info from Abstract portal API for the analyst agent to use as context
     const currentStatePrompt = await createUserPrompt();
     messages.push({ role: "user", content: currentStatePrompt });
 
-    const analystAgentResponse = (
+    const analystResponse = (
       await generateText({
         system: systemPrompt,
         // model: google("gemini-2.5-flash-preview-04-17"),
@@ -167,18 +157,15 @@ async function main() {
       })
     ).text;
 
-    process.stdout.write(analystAgentResponse);
+    process.stdout.write(analystResponse);
     process.stdout.write("\n\n");
 
-    messages.push({ role: "assistant", content: analystAgentResponse });
+    messages.push({ role: "assistant", content: analystResponse });
 
     // Step 2: Process the trade decision through the executor agent
     let executionResult: string | null = null;
     try {
-      // executionResult = await processTradeDecisionToExecution(
-      //   analystAgentResponse
-      // );
-      executionResult = "0x1234567890";
+      executionResult = await processTradeDecisionToExecution(analystResponse);
     } catch (error) {
       console.error("Error processing trade decision:", error);
       executionResult = null;
@@ -193,12 +180,9 @@ async function main() {
     }
 
     // Step 3: Generate tweet based on trade decision and execution result
-    const tweet = await processTradeDecisionToTweet(
-      scraper,
-      analystAgentResponse
-    );
+    const tweet = await processTradeDecisionToTweet(scraper, analystResponse);
 
-    // await postTweet(scraper, tweet, executionResult as `0x${string}` | null);
+    await postTweet(scraper, tweet, executionResult as `0x${string}` | null);
   } catch (error) {
     console.error("Error in main loop:", error);
   }

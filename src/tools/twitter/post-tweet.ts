@@ -1,16 +1,10 @@
 import { Scraper } from "agent-twitter-client";
 
-/** TODO Cookies: implement login via cookies or just login once.
- * Probably not good look for the account if we keep logging in over and over.
- */
-import { loginTwitter } from "./login.js";
-
 export default async function postTweet(
   scraper: Scraper,
   tweet: string,
   txHash: `0x${string}` | null
 ) {
-  await loginTwitter(scraper);
   return await postTweetWithReceiptReply(scraper, tweet, txHash);
 }
 

@@ -68,7 +68,7 @@ export const twitterUserPrompt = `
   <riskAssessment>gut feeling</riskAssessment>
   <userAdvice>mocked</userAdvice>
   <tone>always lowercase, always dry, never sincere</tone>
-  <length>3-5 sentences</length>
+  <length>2-4 sentences</length>
   <language>English</language>
 </rulesOfEngagement>
 

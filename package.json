@@ -24,11 +24,13 @@
     "ai": "^4.3.13",
     "dotenv": "^16.5.0",
     "thirdweb": "^5.97.1",
+    "tough-cookie": "4.1.4",
     "viem": "2.x",
     "zod": "^3.24.4"
   },
   "devDependencies": {
     "@types/node": "^20.17.40",
+    "@types/tough-cookie": "4",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   }

@@ -1,6 +1,5 @@
 import { Scraper, Tweet } from "agent-twitter-client";
 import "dotenv/config";
-import { loginTwitter } from "./login.js";
 
 export default async function getPreviousTweets(scraper: Scraper) {
   const userId = await scraper.getUserIdByScreenName(
@@ -28,11 +27,3 @@ async function formatTweetsForPrompt(tweets: Tweet[]) {
     .map((tweet) => `<tweet>${tweet.text}</tweet>`)
     .join("\n");
 }
-
-async function main() {
-  const scraper = new Scraper();
-  await loginTwitter(scraper);
-  await getPreviousTweets(scraper);
-}
-
-main();
