@@ -3,12 +3,8 @@ import { loginTwitter } from "./login.js";
 import { hasRepliedToTweet, markTweetAsReplied } from "./replied-tweets.js";
 import { generateTweetReply } from "./generate-reply.js";
 
-async function getMentions() {
+async function getMentions(scraper: Scraper) {
   try {
-    console.log("Initializing Twitter scraper...");
-    const scraper = new Scraper();
-    await loginTwitter(scraper);
-
     console.log("Searching for mentions...");
     const mentions = scraper.searchTweets("blaickrock", 5, SearchMode.Top);
     const unrepliedTweets: Tweet[] = [];

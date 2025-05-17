@@ -179,6 +179,7 @@ passing on this one.
 </critical_rules>
 
 <input_format>
+  <input_from_analyst>
  You will be given the logic behind a trade decision (or lack thereof) and a thinking process in the structure below:
 
   <thinking>
@@ -193,7 +194,18 @@ passing on this one.
       - [Price information]
     </specifics>
   </action>
+  </input_from_analyst>
 
+  <input_previous_tweets>
+You will also be given the previous tweets from the blaickrock twitter account to use as context.
+
+Use these to ensure you are not repeating yourself and to better understand your previous actions.
+
+Use your previous tweets to understand your strategy and to ensure you are not repeating yourself.
+
+<previous_tweets>
+{{Previous tweets}}
+</previous_tweets>
 </input_format>
 
 <output_format>

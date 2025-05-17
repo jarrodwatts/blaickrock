@@ -1,6 +1,6 @@
-import { streamText } from "ai";
+import { generateText, streamText } from "ai";
 import dotenv from "dotenv";
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir } from "fs/promises";
 import { join } from "path";
 import { openai } from "@ai-sdk/openai";
 import { CoreMessage } from "ai";
@@ -16,6 +16,9 @@ import {
 } from "./prompt/executorPrompts.js";
 import postTweet from "./tools/twitter/post-tweet.js";
 import { executeSwapTool } from "./tools/execute-swap.js";
+import { Scraper } from "agent-twitter-client";
+import { loginTwitter } from "./tools/twitter/login.js";
+import getPreviousTweets from "./tools/twitter/get-previous-tweets.js";
 
 dotenv.config();
 
@@ -64,13 +67,19 @@ ${tradeDecision}
 }
 
 async function processTradeDecisionToTweet(
+  scraper: Scraper,
   tradeDecision: string
 ): Promise<string> {
   try {
+    const previousTweets = await getPreviousTweets(scraper);
+
     twitterMessages.push({ role: "system", content: twitterSystemPrompt });
     twitterMessages.push({
       role: "user",
-      content: `${twitterUserPrompt}
+      content: `${twitterUserPrompt.replace(
+        "{{Previous tweets}}",
+        previousTweets
+      )}
 <trade_decision>
 ${tradeDecision}
 </trade_decision>
@@ -141,42 +150,35 @@ Your Tweet:
 
 async function main() {
   try {
+    // Connect to twitter once upfront
+    const scraper = new Scraper();
+    await loginTwitter(scraper);
+
+    // Fetch info from Abstract portal API for the analyst agent to use as context
     const currentStatePrompt = await createUserPrompt();
-
-    // Write the prompt to a file for inspection with timestamp
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const promptFilePath = join(
-      process.cwd(),
-      "logs",
-      `current_state_prompt_${timestamp}.txt`
-    );
-    await writeFile(promptFilePath, currentStatePrompt, "utf-8");
-    console.log(`Current state prompt written to ${promptFilePath}`);
-
     messages.push({ role: "user", content: currentStatePrompt });
 
-    const result = streamText({
-      system: systemPrompt,
-      // model: google("gemini-2.5-flash-preview-04-17"),
-      model: openai("gpt-4o-mini"),
-      messages,
-    });
+    const analystAgentResponse = (
+      await generateText({
+        system: systemPrompt,
+        // model: google("gemini-2.5-flash-preview-04-17"),
+        model: openai("gpt-4o-mini"),
+        messages,
+      })
+    ).text;
 
-    let fullResponse = "";
-    process.stdout.write("\nAssistant: ");
-    for await (const delta of result.textStream) {
-      fullResponse += delta;
-      process.stdout.write(delta);
-    }
-
+    process.stdout.write(analystAgentResponse);
     process.stdout.write("\n\n");
 
-    messages.push({ role: "assistant", content: fullResponse });
+    messages.push({ role: "assistant", content: analystAgentResponse });
 
     // Step 2: Process the trade decision through the executor agent
     let executionResult: string | null = null;
     try {
-      executionResult = await processTradeDecisionToExecution(fullResponse);
+      // executionResult = await processTradeDecisionToExecution(
+      //   analystAgentResponse
+      // );
+      executionResult = "0x1234567890";
     } catch (error) {
       console.error("Error processing trade decision:", error);
       executionResult = null;
@@ -191,9 +193,12 @@ async function main() {
     }
 
     // Step 3: Generate tweet based on trade decision and execution result
-    const tweet = await processTradeDecisionToTweet(fullResponse);
+    const tweet = await processTradeDecisionToTweet(
+      scraper,
+      analystAgentResponse
+    );
 
-    await postTweet(tweet, executionResult as `0x${string}` | null);
+    // await postTweet(scraper, tweet, executionResult as `0x${string}` | null);
   } catch (error) {
     console.error("Error in main loop:", error);
   }

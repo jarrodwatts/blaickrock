@@ -6,12 +6,11 @@ import { Scraper } from "agent-twitter-client";
 import { loginTwitter } from "./login.js";
 
 export default async function postTweet(
+  scraper: Scraper,
   tweet: string,
   txHash: `0x${string}` | null
 ) {
-  const scraper = new Scraper();
   await loginTwitter(scraper);
-
   return await postTweetWithReceiptReply(scraper, tweet, txHash);
 }
 
