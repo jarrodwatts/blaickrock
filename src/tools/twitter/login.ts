@@ -28,12 +28,18 @@ export async function loginTwitter(scraper?: Scraper) {
     }
 
     console.log("Logging in with credentials...");
-    await scraper.login(
-      process.env.TWITTER_USERNAME,
-      process.env.TWITTER_PASSWORD,
-      process.env.TWITTER_EMAIL,
-      process.env.TWITTER_2FA_SECRET
-    );
+
+    try {
+      await scraper.login(
+        process.env.TWITTER_USERNAME,
+        process.env.TWITTER_PASSWORD,
+        process.env.TWITTER_EMAIL,
+        process.env.TWITTER_2FA_SECRET
+      );
+    } catch (error) {
+      console.error("Error logging in with credentials:", error);
+      throw error;
+    }
 
     // Check if login was successful
     if (await scraper.isLoggedIn()) {
