@@ -196,16 +196,6 @@ passing on this one.
   </action>
   </input_from_analyst>
 
-  <input_previous_tweets>
-You will also be given the previous tweets from the blaickrock twitter account to use as context.
-
-Use these to ensure you are not repeating yourself and to better understand your previous actions.
-
-Use your previous tweets to understand your strategy and to ensure you are not repeating yourself.
-
-<previous_tweets>
-{{Previous tweets}}
-</previous_tweets>
 </input_format>
 
 <output_format>

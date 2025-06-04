@@ -38,12 +38,12 @@ async function processTradeDecisionToExecution(
       role: "user",
       content: `${executorUserPrompt}
 ${tradeDecision}
-`,
+`,  
     });
 
     const executorResult = (
       await generateText({
-        model: openai("gpt-4o-mini"),
+        model: google("gemini-2.5-pro-preview-05-06"),
         messages: executorMessages,
         tools: {
           executeSwapTool,
@@ -60,30 +60,25 @@ ${tradeDecision}
 }
 
 async function processTradeDecisionToTweet(
-  scraper: Scraper,
+  // scraper: Scraper,
   tradeDecision: string
 ): Promise<string> {
   try {
-    const previousTweets = await getPreviousTweets(scraper);
+    // const previousTweets = await getPreviousTweets(scraper);
 
     twitterMessages.push({ role: "system", content: twitterSystemPrompt });
     twitterMessages.push({
       role: "user",
-      content: `${twitterUserPrompt.replace(
-        "{{Previous tweets}}",
-        previousTweets
-      )}
-<trade_decision>
+      content: `<trade_decision>
 ${tradeDecision}
 </trade_decision>
 
-Your Tweet:
-`,
+Your Tweet:`,
     });
 
     const tweetResult = (
       await generateText({
-        model: google("gemini-2.5-flash-preview-04-17"),
+        model: google("gemini-2.5-pro-preview-05-06"),
         messages: twitterMessages,
       })
     ).text;
@@ -151,8 +146,8 @@ async function main() {
     const analystResponse = (
       await generateText({
         system: systemPrompt,
-        // model: google("gemini-2.5-flash-preview-04-17"),
-        model: openai("gpt-4o-mini"),
+        model: google("gemini-2.5-pro-preview-05-06"),
+        // model: openai("gpt-4o-mini"),
         messages,
       })
     ).text;
@@ -166,6 +161,7 @@ async function main() {
     let executionResult: string | null = null;
     try {
       executionResult = await processTradeDecisionToExecution(analystResponse);
+      executionResult += `\n\nBlaickrock.`
     } catch (error) {
       console.error("Error processing trade decision:", error);
       executionResult = null;
@@ -180,7 +176,9 @@ async function main() {
     }
 
     // Step 3: Generate tweet based on trade decision and execution result
-    const tweet = await processTradeDecisionToTweet(scraper, analystResponse);
+    const tweet = await processTradeDecisionToTweet(
+      // scraper, 
+      analystResponse);
 
     await postTweet(scraper, tweet, executionResult as `0x${string}` | null);
   } catch (error) {
