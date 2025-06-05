@@ -69,7 +69,9 @@ async function processTradeDecisionToTweet(
     twitterMessages.push({ role: "system", content: twitterSystemPrompt });
     twitterMessages.push({
       role: "user",
-      content: `<trade_decision>
+      content: `${twitterUserPrompt}
+
+<trade_decision>
 ${tradeDecision}
 </trade_decision>
 
@@ -131,25 +133,25 @@ async function main() {
     // Step 2: Process the trade decision through the executor agent
     let executionResult: string | null = null;
     try {
-      // executionResult = await processTradeDecisionToExecution(analystResponse);
-      // executionResult += `\n\nBlaickrock.`;
+      executionResult = await processTradeDecisionToExecution(analystResponse);
+      executionResult += `\n\nBlaickrock.`;
     } catch (error) {
       console.error("Error processing trade decision:", error);
       executionResult = null;
     }
 
-    // if (
-    //   executionResult?.includes("CANNOT_EXECUTE") ||
-    //   !executionResult?.startsWith("0x")
-    // ) {
-    //   console.log("Cannot execute trade decision");
-    //   executionResult = null;
-    // }
+    if (
+      executionResult?.includes("CANNOT_EXECUTE") ||
+      !executionResult?.startsWith("0x")
+    ) {
+      console.log("Cannot execute trade decision");
+      executionResult = null;
+    }
 
     // Step 3: Generate tweet based on trade decision and execution result
     const tweet = await processTradeDecisionToTweet(scraper, analystResponse);
 
-    // await postTweet(scraper, tweet, executionResult as `0x${string}` | null);
+    await postTweet(scraper, tweet, executionResult as `0x${string}` | null);
   } catch (error) {
     console.error("Error in main loop:", error);
   }
