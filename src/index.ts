@@ -43,7 +43,7 @@ ${tradeDecision}
 
     const executorResult = (
       await generateText({
-        model: google("gemini-2.5-pro-preview-05-06"),
+        model: google("gemini-2.0-flash"),
         messages: executorMessages,
         tools: {
           executeSwapTool,

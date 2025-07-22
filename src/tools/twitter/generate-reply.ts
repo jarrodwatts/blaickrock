@@ -27,7 +27,7 @@ export async function generateTweetReply(tweet: Tweet): Promise<string> {
     // Use the same model as in index.ts or adjust as needed
     const replyResult = (
       await generateText({
-        model: google("gemini-2.5-flash-preview-04-17"),
+        model: google("gemini-2.0-flash"),
         messages: messages,
         system: twitterReplySystemPrompt,
       })
